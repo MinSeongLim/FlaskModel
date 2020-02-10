@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Echart import-->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+          
+    <!-- Socket import-->
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+       
+    <!--[if lt IE]>
+		<script src="assets/js/html5shiv.min.js"></script>
+		<script src="assets/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div id="chart1" style="width: 1200px; height: 300px;"></div>
+    <div id="chart2" style="width: 1200px; height: 300px;"></div>
+    <div id="chart3" style="width: 1200px; height: 300px;"></div>
+    <div id="chart4" style="width: 1200px; height: 300px;"></div>
+    <div id="chart5" style="width: 1200px; height: 300px;"></div>
+    <div id="chart6" style="width: 1200px; height: 300px;"></div>
+    <div id="chart7" style="width: 1200px; height: 300px;"></div>
+    <div id="chart8" style="width: 1200px; height: 300px;"></div>
+    
+    <script type="text/javascript" charset="utf-8">
+        function Chart(chart)
+        {
+            this.time = [];
+            this.value = [];
+            this.num = 0;
+            this.chart = chart
+        }
+
+        var chart1 = new Chart(echarts.init(document.getElementById('chart1')));
+        var chart2 = new Chart(echarts.init(document.getElementById('chart2')));
+        var chart3 = new Chart(echarts.init(document.getElementById('chart3')));
+        var chart4 = new Chart(echarts.init(document.getElementById('chart4')));
+        var chart5 = new Chart(echarts.init(document.getElementById('chart5')));
+        var chart6 = new Chart(echarts.init(document.getElementById('chart6')));
+        var chart7 = new Chart(echarts.init(document.getElementById('chart7')));
+        var chart8 = new Chart(echarts.init(document.getElementById('chart8')));
+
+        for(var i = 1 ; i <= 8 ; i++)
+        {
+            var myChart = echarts.init(document.getElementById('chart'+i));
+            myChart.setOption({
+                title: {
+                    text: 'chart' + i
+                },
+                tooltip: {},
+                xAxis: {
+                    data: []
+                },
+                yAxis: {},
+                series: [{
+                    name: 'value',
+                    type: 'line',
+                    data: []
+                }]
+            });
+        }
+    </script>
+
+    <script type="text/javascript" charset="utf-8">
+
+        $(document).ready(function () {
+            var arr = new Array();
+            namespace = '/test';
+            var socket = io(namespace);
+            socket.on('1', function (msg) {
+                update_mychart(msg, chart1);                
+            });
+            socket.on('2', function (msg) {
+                update_mychart(msg, chart2);                
+            });
+            socket.on('3', function (msg) {
+                update_mychart(msg, chart3);                
+            });
+            socket.on('4', function (msg) {
+                update_mychart(msg, chart4);                
+            });
+            socket.on('5', function (msg) {
+                update_mychart(msg, chart5);                
+            });
+            socket.on('6', function (msg) {
+                update_mychart(msg, chart6);                
+            });
+            socket.on('7', function (msg) {
+                update_mychart(msg, chart7);                
+            });
+            socket.on('8', function (msg) {
+                update_mychart(msg, chart8);                
+            });
+        });
+    </script>
+
+    <script type="text/javascript" charset="utf-8">        
+        
+        var update_mychart = function (res, chart)
+        {            
+            var data = res.data.data;
+            var result = res.data.result;            
+
+            if (chart.time.length == 0) {
+
+                for (var i = 0; i < result[0] + 10; i++) {
+                    chart.time.push(i)
+                    chart.value.push('')
+                }
+
+                for (var i = 0; i < 7; i++) {
+                    chart.value[chart.num++] = data[0][0][1];
+                }
+
+            } else {
+                chart.value[chart.num++] = data[6][1];
+            }
+
+            chart.chart.setOption({
+                xAxis: {
+                    data: chart.time
+                },
+                series: [{
+                    name: 'value',
+                    data: chart.value
+                }, {
+                    name: '사용데이터',
+                    type: 'line',
+                    color: 'green',
+                    markArea: {
+                        data: [
+                            [{ xAxis: chart.num - 7 }, { xAxis: chart.num - 1 }]
+                        ],
+                    }
+                },
+                {
+                    name: '예측결과',
+                    type: 'line',
+                    color: 'red',
+                    markArea: {
+                        data: [
+                            [{ xAxis: result[0] }, { xAxis: result[0] + 1 }]
+                        ],
+                    }
+                }]
+            });
+        };                    //         //myChart.showLoading();
+    </script>
+</body>
+</html>
